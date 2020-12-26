@@ -1,0 +1,36 @@
+version: '3'
+services:
+  node:
+    image: quay.io/prometheus/node-exporter
+    pid: "host"
+    network_mode: "host"
+    volumes:
+      - /:/host:ro,rslave
+    command: "--path.rootfs /host"
+    restart: always
+
+  prometheus:
+    image: prom/prometheus
+    user: "0:0"
+    ports:
+      - "9090:9090"
+    volumes:
+      - /root/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/root/prometheus'
+      - '--storage.tsdb.retention.time=1y'
+    restart: always
+
+  grafana:
+    image: grafana/grafana
+    user: "472:472"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=password
+      - GF_USERS_ALLOW_SIGN_UP=false  
+    restart: always
+
